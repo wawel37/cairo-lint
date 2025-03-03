@@ -47,6 +47,8 @@ itertools = "0.14.0"
 log = "0.4.26"
 num-bigint = "0.4.6"
 pretty_assertions = "1.4.1"
+serde = { version = "1", features = ["serde_derive"] }
+serde_json = { version = "1" }
 smol_str = { version = "0.3.2", features = ["serde"] }
 test-case = "3.0"
 

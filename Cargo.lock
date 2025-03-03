@@ -2384,8 +2384,11 @@ name = "xtask"
 version = "1.0.0"
 dependencies = [
  "anyhow",
+ "cairo-lint-core",
  "cairo-toolchain-xtasks",
  "clap",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

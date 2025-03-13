@@ -4,7 +4,6 @@ mod breaks;
 mod double_comparison;
 mod double_parens;
 mod duplicate_underscore_args;
-mod enum_variant_names;
 mod eq_op;
 mod erasing_operations;
 mod helpers;

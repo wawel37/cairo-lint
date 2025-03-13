@@ -19,7 +19,6 @@ use cairo_lang_semantic::diagnostic::SemanticDiagnosticKind;
 use cairo_lang_starknet::starknet_plugin_suite;
 use cairo_lang_syntax::node::SyntaxNode;
 use cairo_lang_test_plugin::test_plugin_suite;
-use cairo_lang_utils::smol_str::SmolStr;
 use cairo_lang_utils::{Upcast, UpcastMut};
 use cairo_lint_core::context::{get_lint_type_from_diagnostic_message, CairoLintKind};
 use cairo_lint_core::diagnostics::format_diagnostic;
@@ -33,6 +32,7 @@ use scarb_metadata::{MetadataCommand, PackageMetadata, TargetMetadata};
 use scarb_ui::args::{PackagesFilter, VerbositySpec};
 use scarb_ui::components::Status;
 use scarb_ui::{OutputFormat, Ui};
+use smol_str::SmolStr;
 
 #[derive(Parser, Debug)]
 struct Args {

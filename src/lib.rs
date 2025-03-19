@@ -22,8 +22,6 @@ pub struct CairoLintToolMetadata {
     pub nopanic: bool,
 }
 
-// TODO(wawel37): Don't make it public as we deploy Scarb with new cairo-lint cli there.
-// The context mod is set to public for the duration of cairo-lint-cli existence.
 pub mod context;
 pub mod diagnostics;
 pub mod fixes;

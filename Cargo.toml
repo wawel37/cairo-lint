@@ -35,7 +35,6 @@ test-case.workspace = true
 [workspace]
 resolver = "2"
 members = [
-  "crates/cairo-lint-cli",
   "xtask"
 ]
 
@@ -67,7 +66,6 @@ cairo-lang-defs = "*"
 cairo-lang-diagnostics = "*"
 cairo-lang-filesystem = "*"
 cairo-lang-semantic = "*"
-cairo-lang-starknet = "*"
 cairo-lang-syntax = "*"
 cairo-lang-test-plugin = "*"
 cairo-lang-utils = "*"
@@ -81,7 +79,6 @@ log = "0.4.26"
 num-bigint = "0.4.6"
 pretty_assertions = "1.4.1"
 scarb-metadata = "1.14.0"
-semver = "1.0.25"
 serde = { version = "1", features = ["serde_derive"] }
 serde_json = { version = "1" }
 tempfile = "3"
@@ -114,8 +111,6 @@ cairo-lang-sierra-gas = { git = "https://github.com/starkware-libs/cairo", rev =
 cairo-lang-sierra-generator = { git = "https://github.com/starkware-libs/cairo", rev = "52042029096bab9d3b3427860e3464bf6e50d417" }
 cairo-lang-sierra-to-casm = { git = "https://github.com/starkware-libs/cairo", rev = "52042029096bab9d3b3427860e3464bf6e50d417" }
 cairo-lang-sierra-type-size = { git = "https://github.com/starkware-libs/cairo", rev = "52042029096bab9d3b3427860e3464bf6e50d417" }
-cairo-lang-starknet = { git = "https://github.com/starkware-libs/cairo", rev = "52042029096bab9d3b3427860e3464bf6e50d417" }
-cairo-lang-starknet-classes = { git = "https://github.com/starkware-libs/cairo", rev = "52042029096bab9d3b3427860e3464bf6e50d417" }
 cairo-lang-syntax = { git = "https://github.com/starkware-libs/cairo", rev = "52042029096bab9d3b3427860e3464bf6e50d417" }
 cairo-lang-syntax-codegen = { git = "https://github.com/starkware-libs/cairo", rev = "52042029096bab9d3b3427860e3464bf6e50d417" }
 cairo-lang-test-plugin = { git = "https://github.com/starkware-libs/cairo", rev = "52042029096bab9d3b3427860e3464bf6e50d417" }

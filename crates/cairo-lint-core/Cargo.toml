@@ -7,7 +7,6 @@ license-file.workspace = true
 description = "Core library for linting Cairo language code."
 
 [dependencies]
-annotate-snippets.workspace = true
 anyhow.workspace = true
 cairo-lang-compiler.workspace = true
 cairo-lang-defs.workspace = true
@@ -33,6 +32,3 @@ tempfile.workspace = true
 indoc.workspace = true
 scarb-metadata.workspace = true
 semver.workspace = true
-
-[features]
-testing-colors = ["annotate-snippets/testing-colors"]

@@ -48,12 +48,10 @@ fn main() {
 #[test]
 fn simple_break_diagnostics() {
     test_lint_diagnostics!(SIMPLE_BREAK, @r"
-    warning: Plugin diagnostic: unnecessary double parentheses found after break. Consider removing them.
+    Plugin diagnostic: unnecessary double parentheses found after break. Consider removing them.
      --> lib.cairo:4:8
-      |
-    4 |        break ();
-      |        ---------
-      |
+           break ();
+           ^^^^^^^^^
     ");
 }
 
@@ -88,12 +86,10 @@ fn simple_break_allowed_fixer() {
 #[test]
 fn break_inside_of_if_diagnostics() {
     test_lint_diagnostics!(BREAK_INSIDE_OF_IF, @r"
-    warning: Plugin diagnostic: unnecessary double parentheses found after break. Consider removing them.
+    Plugin diagnostic: unnecessary double parentheses found after break. Consider removing them.
      --> lib.cairo:7:13
-      |
-    7 |             break ();
-      |             ---------
-      |
+                break ();
+                ^^^^^^^^^
     ");
 }
 
@@ -116,12 +112,10 @@ fn break_inside_of_if_fixer() {
 #[test]
 fn break_inside_of_if_with_comment_diagnostics() {
     test_lint_diagnostics!(BREAK_INSIDE_OF_IF_WITH_COMMENT, @r"
-    warning: Plugin diagnostic: unnecessary double parentheses found after break. Consider removing them.
+    Plugin diagnostic: unnecessary double parentheses found after break. Consider removing them.
      --> lib.cairo:8:13
-      |
-    8 |             break ();
-      |             ---------
-      |
+                break ();
+                ^^^^^^^^^
     ");
 }
 

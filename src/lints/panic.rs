@@ -10,9 +10,8 @@ use if_chain::if_chain;
 use itertools::Itertools;
 
 use crate::context::{CairoLintKind, Lint};
+use crate::helper::PANIC_PATH;
 use crate::queries::{get_all_function_bodies, get_all_function_calls};
-
-const PANIC: &str = "core::panics::panic";
 
 pub struct PanicInCode;
 
@@ -71,7 +70,7 @@ fn check_single_panic_usage(
         .as_syntax_node();
 
     // If the function is not the panic function from the corelib return
-    if function_call_expr.function.full_path(db) != PANIC {
+    if function_call_expr.function.full_path(db) != PANIC_PATH {
         return;
     }
 

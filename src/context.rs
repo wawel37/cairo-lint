@@ -14,6 +14,8 @@ use crate::lints::double_parens::check_double_parens;
 use crate::lints::double_parens::DoubleParens;
 use crate::lints::duplicate_underscore_args::check_duplicate_underscore_args;
 use crate::lints::duplicate_underscore_args::DuplicateUnderscoreArgs;
+use crate::lints::empty_enum_brackets_variant::check_empty_enum_brackets_variant;
+use crate::lints::empty_enum_brackets_variant::EmptyEnumBracketsVariant;
 use crate::lints::enum_variant_names::check_enum_variant_names;
 use crate::lints::enum_variant_names::EnumVariantNames;
 use crate::lints::eq_op::check_eq_op;
@@ -42,6 +44,8 @@ use crate::lints::loops::loop_for_while::check_loop_for_while;
 use crate::lints::loops::loop_for_while::LoopForWhile;
 use crate::lints::loops::loop_match_pop_front::check_loop_match_pop_front;
 use crate::lints::loops::loop_match_pop_front::LoopMatchPopFront;
+use crate::lints::manual::manual_assert::check_manual_assert;
+use crate::lints::manual::manual_assert::ManualAssert;
 use crate::lints::manual::manual_err::check_manual_err;
 use crate::lints::manual::manual_err::ManualErr;
 use crate::lints::manual::manual_expect::check_manual_expect;
@@ -61,8 +65,10 @@ use crate::lints::manual::manual_unwrap_or_default::check_manual_unwrap_or_defau
 use crate::lints::manual::manual_unwrap_or_default::ManualUnwrapOrDefault;
 use crate::lints::panic::check_panic_usage;
 use crate::lints::panic::PanicInCode;
-use crate::lints::performance::check_inefficient_while_comp;
-use crate::lints::performance::InefficientWhileComparison;
+use crate::lints::performance::inefficient_while_comp::check_inefficient_while_comp;
+use crate::lints::performance::inefficient_while_comp::InefficientWhileComparison;
+use crate::lints::redundant_brackets_in_enum_call::check_redundant_brackets_in_enum_call;
+use crate::lints::redundant_brackets_in_enum_call::RedundantBracketsInEnumCall;
 use crate::lints::redundant_op::check_redundant_operation;
 use crate::lints::redundant_op::RedundantOperation;
 use crate::lints::single_match::check_single_matches;
@@ -106,6 +112,7 @@ pub enum CairoLintKind {
     ManualIsOk,
     ManualIsErr,
     ManualExpect,
+    ManualAssert,
     DuplicateIfCondition,
     ManualExpectErr,
     IntGePlusOne,
@@ -118,6 +125,7 @@ pub enum CairoLintKind {
     RedundantOperation,
     EnumVariantNames,
     CloneOnCopy,
+    EnumEmptyVariantBrackets,
 }
 
 pub trait Lint: Sync + Send {
@@ -318,6 +326,18 @@ impl LintContext {
             LintRuleGroup {
                 lints: vec![Box::new(CloneOnCopy)],
                 check_function: check_clone_on_copy,
+            },
+            LintRuleGroup {
+                lints: vec![Box::new(EmptyEnumBracketsVariant)],
+                check_function: check_empty_enum_brackets_variant,
+            },
+            LintRuleGroup {
+                lints: vec![Box::new(ManualAssert)],
+                check_function: check_manual_assert,
+            },
+            LintRuleGroup {
+                lints: vec![Box::new(RedundantBracketsInEnumCall)],
+                check_function: check_redundant_brackets_in_enum_call,
             },
         ]
     }

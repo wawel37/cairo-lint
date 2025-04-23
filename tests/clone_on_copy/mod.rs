@@ -47,7 +47,7 @@ fn main() {
 
 const CLONE_TUPLE: &str = r#"
 fn main() {
-    let t: (u32, felt252) = (42, 'hello');
+    let t: (@u32, felt252) = (@42, 'hello');
     let t_clone = t.clone();
     println!("{:?}", t_clone);
 }
@@ -185,6 +185,41 @@ fn main() {
 }
 "#;
 
+const CLONE_ON_SNAP_FUNCTION: &str = r#"
+fn fun() -> @felt252 {
+    @123
+}
+
+fn main(){
+    let a = (*fun()).clone();
+    println!("{}", a);
+}
+"#;
+
+const CLONE_ON_METHOD_CALL: &str = r#"
+#[derive(Copy, Drop)]
+struct Point {
+    x: u32,
+    y: u32,
+}
+
+trait to_get {
+    fn get_x(self: @Point) -> u32;
+}
+
+impl A of to_get {
+    fn get_x(self: @Point) -> u32 {
+        *self.x
+    }
+}
+
+fn main() {
+    let a = Point { x: 1, y: 2};
+    let b = a.get_x().clone();
+    println!("{}", b);
+}
+"#;
+
 #[test]
 fn clone_numeric_type_diagnostic() {
     test_lint_diagnostics!(CLONE_NUMERIC_TYPE, @r"
@@ -239,7 +274,7 @@ fn clone_struct_diagnostic() {
 
 #[test]
 fn clone_struct_fixer() {
-    test_lint_fixer!(CLONE_STRUCT, @r##"
+    test_lint_fixer!(CLONE_STRUCT, @r#"
     #[derive(Copy, Drop)]
     struct Point {
         x: u32,
@@ -251,7 +286,7 @@ fn clone_struct_fixer() {
         let p2 = p1;
         println!("{}, {}", p1.x, p2.y);
     }
-    "##);
+    "#);
 }
 
 #[test]
@@ -262,7 +297,7 @@ fn clone_non_copy_struct_diagnostic() {
 
 #[test]
 fn clone_non_copy_struct_fixer() {
-    test_lint_fixer!(CLONE_NON_COPY_STRUCT, @r##"
+    test_lint_fixer!(CLONE_NON_COPY_STRUCT, @r#"
     #[derive(Clone, Drop)]
     struct Point {
         x: u32,
@@ -274,7 +309,7 @@ fn clone_non_copy_struct_fixer() {
         let p2 = p1.clone();
         println!("{}, {}", p1.x, p2.y);
     }
-    "##);
+    "#);
 }
 
 #[test]
@@ -291,7 +326,7 @@ fn clone_tuple_diagnostic() {
 fn clone_tuple_fixer() {
     test_lint_fixer!(CLONE_TUPLE, @r#"
     fn main() {
-        let t: (u32, felt252) = (42, 'hello');
+        let t: (@u32, felt252) = (@42, 'hello');
         let t_clone = t;
         println!("{:?}", t_clone);
     }
@@ -338,7 +373,7 @@ fn clone_in_impl_diagnostic() {
 
 #[test]
 fn clone_in_impl_fixer() {
-    test_lint_fixer!(CLONE_IN_IMPL_AND, @r##"
+    test_lint_fixer!(CLONE_IN_IMPL_AND_TRAIT, @r##"
     #[derive(Copy, Drop)]
     struct Point {
         x: u32,
@@ -347,8 +382,8 @@ fn clone_in_impl_fixer() {
 
     trait TMovable {
         fn move_self(self: @Point, dx: @@u32, dy: u32) -> Point {
-            let new_point = *self;
-            new_point
+            let new_point_in_trait = *self;
+            new_point_in_trait
         }
 
         fn move(self: @Point, dx: @@u32, dy: u32) -> Point;
@@ -396,7 +431,7 @@ fn clone_on_function_fixer() {
 }
 #[test]
 fn allow_clone_in_impl_diagnostic() {
-    test_lint_diagnostics!(ALLOW_CLONE_IN_IMPL_AND_TRAIT, @r"")
+    test_lint_diagnostics!(ALLOW_CLONE_IN_IMPL_AND_TRAIT, @"")
 }
 
 #[test]
@@ -474,4 +509,56 @@ fn clone_from_path_fixer() {
         println!("{}", b);
     }
     "#)
+}
+
+#[test]
+fn clone_on_snap_function_diagnostic() {
+    test_lint_diagnostics!(CLONE_ON_SNAP_FUNCTION, @r"
+    Plugin diagnostic: using `clone` on type which implements `Copy` trait
+     --> lib.cairo:7:13
+        let a = (*fun()).clone();
+                ^^^^^^^^^^^^^^^^
+    ")
+}
+
+#[test]
+fn clone_on_snap_function_fixer() {
+    test_lint_fixer!(CLONE_ON_SNAP_FUNCTION, @r"")
+}
+
+#[test]
+fn clone_on_method_call_diagnostic() {
+    test_lint_diagnostics!(CLONE_ON_METHOD_CALL, @r"
+    Plugin diagnostic: using `clone` on type which implements `Copy` trait
+     --> lib.cairo:20:13
+        let b = a.get_x().clone();
+                ^^^^^^^^^^^^^^^^^
+    ");
+}
+
+#[test]
+fn clone_on_method_call_fixer() {
+    test_lint_fixer!(CLONE_ON_METHOD_CALL, @r##"
+    #[derive(Copy, Drop)]
+    struct Point {
+        x: u32,
+        y: u32,
+    }
+
+    trait to_get {
+        fn get_x(self: @Point) -> u32;
+    }
+
+    impl A of to_get {
+        fn get_x(self: @Point) -> u32 {
+            *self.x
+        }
+    }
+
+    fn main() {
+        let a = Point { x: 1, y: 2};
+        let b = a.get_x();
+        println!("{}", b);
+    }
+    "##);
 }

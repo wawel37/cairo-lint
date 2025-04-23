@@ -17,7 +17,6 @@ use cairo_lang_semantic::{Arenas, Expr, ExprFunctionCallArg, ExprId};
 use cairo_lang_syntax::node::ast::{self, BlockOrIf, ElseClause, ExprBlock, Statement};
 use cairo_lang_syntax::node::db::SyntaxGroup;
 use cairo_lang_syntax::node::helpers::GetIdentifier;
-use cairo_lang_syntax::node::TypedSyntaxNode;
 use cairo_lang_syntax::node::kind::SyntaxKind;
 use cairo_lang_syntax::node::{SyntaxNode, TypedSyntaxNode};
 use if_chain::if_chain;

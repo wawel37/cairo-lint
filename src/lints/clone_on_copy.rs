@@ -11,6 +11,7 @@ use cairo_lang_semantic::db::SemanticGroup;
 use cairo_lang_semantic::items::function_with_body::SemanticExprLookup;
 use cairo_lang_semantic::types::peel_snapshots;
 use cairo_lang_semantic::{Expr, ExprFunctionCall};
+use cairo_lang_syntax::node::ast::ExprPtr;
 use cairo_lang_syntax::node::kind::SyntaxKind;
 use cairo_lang_syntax::node::{ast, SyntaxNode, TypedStablePtr, TypedSyntaxNode};
 use cairo_lang_utils::Intern;
@@ -60,7 +61,6 @@ pub fn check_clone_on_copy(
     let function_bodies = get_all_function_bodies(db, item);
     for function_body in function_bodies.iter() {
         let function_call_exprs = get_all_function_calls(function_body);
-        // let function_call_exprs = get_all_function_calls_db(function_body, db.upcast());
         for function_call_expr in function_call_exprs {
             check_clone_usage(db, &function_call_expr, diagnostics);
         }
@@ -84,16 +84,29 @@ fn check_clone_usage(
 
 fn fix_clone_on_copy(db: &dyn SemanticGroup, node: SyntaxNode) -> Option<(SyntaxNode, String)> {
     let ast_expr_binary = ast::ExprBinary::cast(db.upcast(), node)?;
-    println!("{:?}", ast_expr_binary.stable_ptr(db.upcast()));
+
     let module_file_id = helper::find_module_file_containing_node(db, &node)?;
 
     let ast_expr = ast_expr_binary.lhs(db.upcast());
 
-    // It breaks inside this method
-    let expr_semantic = get_expr_semantic(db, module_file_id, &ast_expr)?;
+    let expr_semantic = get_expr_semantic(db, module_file_id, &ast_expr, &ast_expr_binary)
+        .expect("Failed to find expression semantic.");
 
+    // Extract the number of `@` snapshots from the type.
+    // Each `@` will later be represented as a `*` prefix in the output.
     let (mut snapshot_count, _) = peel_snapshots(db, expr_semantic.ty());
 
+    // `clone(self: @T)` expects an `@`, so the compiler will automatically insert
+    // an `@` into the type if it was not explicitly provided by the user.
+    // In such cases, the expression will be of type `Expr::Snapshot`,
+    // meaning that `peel_snapshots` would count one coercion too many.
+
+    // However, if the `@` was explicitly written by the user,
+    // the expression will be of another type, such as `Expr::Var`,
+    // and `peel_snapshots` will have already counted the correct number of `@`.
+
+    // Therefore, we need to manually subtract one from the snapshot count
+    // when the expression is a `Expr::Snapshot` to correct this.
     if let Expr::Snapshot(_) = expr_semantic {
         snapshot_count -= 1;
     };
@@ -111,9 +124,12 @@ fn get_expr_semantic(
     db: &dyn SemanticGroup,
     module_file_id: ModuleFileId,
     ast_expr: &ast::Expr,
+    ast_expr_binary: &ast::ExprBinary,
 ) -> Option<Expr> {
     let expr_ptr = ast_expr.stable_ptr(db.upcast());
 
+    // Traverses up the syntax tree to find the nearest enclosing function (trait, impl, or free) that owns the expression.
+    // If found, retrieves the corresponding semantic expression.
     ast_expr
         .as_syntax_node()
         .ancestors_with_self(db.upcast())
@@ -142,28 +158,18 @@ fn get_expr_semantic(
                     )
                 }
             } else {
-                // println!("{}", ancestor.get_text_without_trivia(db.upcast()));
                 return None;
             };
 
-            println!("{:?}", db.lookup_expr_by_ptr(function_id, expr_ptr));
-
-            let body_data = match function_id {
-                FunctionWithBodyId::Free(id) => db.priv_free_function_body_data(id).ok()?,
-                FunctionWithBodyId::Impl(id) => db.priv_impl_function_body_data(id).ok()?,
-                FunctionWithBodyId::Trait(id) => db.priv_trait_function_body_data(id).ok()??,
-            };
-            println!("{:?}", expr_ptr);
-            println!("{:?}", body_data.expr_lookup); //.get(&ptr).copied().to_maybe();
-
-            // It breaks here, while looking for expr, because `(*fun())` is not in the HashMap (`body_data.expr_lookup`).
-            // There is whole expression `((*fun()).clone()`, but I need `Expr`, not `ExprBinary`.
-            // Probably in semantic there is different form than `(*fun())`
-            // Related test: tests/clone_on_copy/mod.rs:525
-            db.lookup_expr_by_ptr(function_id, expr_ptr).ok().map(|id| {
-                println!("{}", ancestor.get_text_without_trivia(db.upcast()));
-
-                db.expr_semantic(function_id, id)
-            })
+            db.lookup_expr_by_ptr(function_id, expr_ptr)
+                .or_else(|_| {
+                    // If the expression is not found using the expr_ptr (the pointer from the left-hand side of the binary expression),
+                    // it means the pointer should be created from the entire binary expression instead.
+                    let expr_binary_ptr =
+                        ExprPtr(ast_expr_binary.stable_ptr(db.upcast()).untyped());
+                    db.lookup_expr_by_ptr(function_id, expr_binary_ptr)
+                })
+                .ok()
+                .map(|id| db.expr_semantic(function_id, id))
         })
 }

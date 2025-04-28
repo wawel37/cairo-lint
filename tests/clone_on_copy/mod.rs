@@ -523,7 +523,16 @@ fn clone_on_snap_function_diagnostic() {
 
 #[test]
 fn clone_on_snap_function_fixer() {
-    test_lint_fixer!(CLONE_ON_SNAP_FUNCTION, @r"")
+    test_lint_fixer!(CLONE_ON_SNAP_FUNCTION, @r#"
+    fn fun() -> @felt252 {
+        @123
+    }
+
+    fn main(){
+        let a = (*fun());
+        println!("{}", a);
+    }
+    "#)
 }
 
 #[test]

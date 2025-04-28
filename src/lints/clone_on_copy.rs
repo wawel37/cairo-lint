@@ -11,7 +11,6 @@ use cairo_lang_semantic::db::SemanticGroup;
 use cairo_lang_semantic::items::function_with_body::SemanticExprLookup;
 use cairo_lang_semantic::types::peel_snapshots;
 use cairo_lang_semantic::{Expr, ExprFunctionCall};
-use cairo_lang_syntax::node::ast::ExprPtr;
 use cairo_lang_syntax::node::kind::SyntaxKind;
 use cairo_lang_syntax::node::{ast, SyntaxNode, TypedStablePtr, TypedSyntaxNode};
 use cairo_lang_utils::Intern;
@@ -73,6 +72,7 @@ fn check_clone_usage(
     diagnostics: &mut Vec<PluginDiagnostic>,
 ) {
     let function_name = expr.function.full_path(db).split("::").take(3).join("::");
+
     if function_name == T_COPY_CLONE {
         diagnostics.push(PluginDiagnostic {
             stable_ptr: expr.stable_ptr.untyped(),
@@ -166,7 +166,7 @@ fn get_expr_semantic(
                     // If the expression is not found using the expr_ptr (the pointer from the left-hand side of the binary expression),
                     // it means the pointer should be created from the entire binary expression instead.
                     let expr_binary_ptr =
-                        ExprPtr(ast_expr_binary.stable_ptr(db.upcast()).untyped());
+                        ast::ExprPtr(ast_expr_binary.stable_ptr(db.upcast()).untyped());
                     db.lookup_expr_by_ptr(function_id, expr_binary_ptr)
                 })
                 .ok()

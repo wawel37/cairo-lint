@@ -184,7 +184,7 @@ pub fn setup_test_crate_ex(db: &mut dyn SemanticGroup, content: &str) -> CrateId
         cache_file: None,
     }
     .intern(db);
-    // TODO (wawel37) make it in proper way
+
     db.set_crate_configs(Arc::new(OrderedHashMap::from([(crate_id, crate_config)])));
 
     crate_id

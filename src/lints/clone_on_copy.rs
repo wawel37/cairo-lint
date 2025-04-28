@@ -1,5 +1,5 @@
 use crate::context::{CairoLintKind, Lint};
-use crate::helper;
+use crate::helper::find_module_file_containing_node;
 use crate::queries::{get_all_function_bodies, get_all_function_calls};
 use cairo_lang_defs::ids::{
     FreeFunctionLongId, FunctionWithBodyId, ImplFunctionLongId, ModuleFileId, ModuleItemId,
@@ -85,12 +85,12 @@ fn check_clone_usage(
 fn fix_clone_on_copy(db: &dyn SemanticGroup, node: SyntaxNode) -> Option<(SyntaxNode, String)> {
     let ast_expr_binary = ast::ExprBinary::cast(db.upcast(), node)?;
 
-    let module_file_id = helper::find_module_file_containing_node(db, &node)?;
+    let module_file_id = find_module_file_containing_node(db, &node)?;
 
     let ast_expr = ast_expr_binary.lhs(db.upcast());
 
-    let expr_semantic = get_expr_semantic(db, module_file_id, &ast_expr, &ast_expr_binary)
-        .expect("Failed to find expression semantic.");
+    let expr_semantic = get_expr_semantic(db, module_file_id, &ast_expr_binary)
+        .expect("Failed to find semantic expression.");
 
     // Extract the number of `@` snapshots from the type.
     // Each `@` will later be represented as a `*` prefix in the output.
@@ -100,11 +100,11 @@ fn fix_clone_on_copy(db: &dyn SemanticGroup, node: SyntaxNode) -> Option<(Syntax
     // an `@` into the type if it was not explicitly provided by the user.
     // In such cases, the expression will be of type `Expr::Snapshot`,
     // meaning that `peel_snapshots` would count one coercion too many.
-
+    //
     // However, if the `@` was explicitly written by the user,
     // the expression will be of another type, such as `Expr::Var`,
     // and `peel_snapshots` will have already counted the correct number of `@`.
-
+    //
     // Therefore, we need to manually subtract one from the snapshot count
     // when the expression is a `Expr::Snapshot` to correct this.
     if let Expr::Snapshot(_) = expr_semantic {
@@ -123,9 +123,10 @@ fn fix_clone_on_copy(db: &dyn SemanticGroup, node: SyntaxNode) -> Option<(Syntax
 fn get_expr_semantic(
     db: &dyn SemanticGroup,
     module_file_id: ModuleFileId,
-    ast_expr: &ast::Expr,
     ast_expr_binary: &ast::ExprBinary,
 ) -> Option<Expr> {
+    let ast_expr = ast_expr_binary.lhs(db.upcast());
+
     let expr_ptr = ast_expr.stable_ptr(db.upcast());
 
     // Traverses up the syntax tree to find the nearest enclosing function (trait, impl, or free) that owns the expression.

@@ -305,7 +305,6 @@ pub fn find_module_file_containing_node(
 
 fn find_module_containing_node(db: &dyn SemanticGroup, node: &SyntaxNode) -> Option<ModuleId> {
     let syntax_db = db.upcast();
-    // let syntax_db = syntax_db.upcast();
 
     // Get the main module of the main file that leads to the node.
     // The node may be located in a virtual file of a submodule.
@@ -318,7 +317,7 @@ fn find_module_containing_node(db: &dyn SemanticGroup, node: &SyntaxNode) -> Opt
         // Get the root module of a file containing the node.
         let node_main_module = db.file_modules(node_file_id).ok()?.iter().copied().next()?;
 
-        // // Get the main module of the file.
+        // Get the main module of the file.
         let main_file = db.module_main_file(node_main_module).ok()?;
 
         // Get the main module of that file.

@@ -13,6 +13,16 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  update-docs:
+    name: Update docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Run update-docs xtask
+        run: cargo xtask update-docs
+
   build:
     name: Build website
     runs-on: ubuntu-latest

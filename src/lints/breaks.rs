@@ -14,7 +14,7 @@ pub struct BreakUnit;
 
 /// ## What it does
 ///
-/// Checks for `break ();` statements and suggests removing the parentheses.
+/// Just a simple test :P.
 ///
 /// ## Example
 ///
